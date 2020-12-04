@@ -19,6 +19,7 @@ interface IWalletConnectContext {
   connect: () => void
   disconnect: () => void
   sendTransaction: (tx: any) => void
+  provider: any
 }
 
 const INITIAL_CONFIG: IConfig = {
@@ -111,6 +112,7 @@ const WalletConnectContextProvider: React.FC<{
         connect,
         disconnect: () => provider.disconnect(),
         sendTransaction,
+        provider,
       }}
     >
       {children}

@@ -1,5 +1,9 @@
+import { Web3Provider } from '@ethersproject/providers'
+import { BigNumber } from 'ethers'
 import React, { useContext, useState } from 'react'
+import { DAI_ADDRESS } from '../constants'
 import { walletConnectContext } from '../contexts/WalletConnectContext'
+import ERC20TokenService from '../services/ERC20TokenService'
 
 export const App: React.FC = () => {
   const {
@@ -8,6 +12,7 @@ export const App: React.FC = () => {
     sendTransaction,
     account,
     connected,
+    provider,
   } = useContext(walletConnectContext)
   const [receiverAddress, setReceiverAddress] = useState<string>('')
 
@@ -27,6 +32,29 @@ export const App: React.FC = () => {
     }
   }
 
+  const getBalance = async () => {
+    if (connected && receiverAddress) {
+      const erc20Service = await ERC20TokenService.getInstance(
+        new Web3Provider(provider),
+        DAI_ADDRESS,
+      )
+
+      const data = erc20Service.contract.interface.encodeFunctionData(
+        'transfer',
+        [receiverAddress, BigNumber.from('1')],
+      )
+
+      // @todo fix promise never resolving
+      const res = await sendTransaction({
+        from: account,
+        to: DAI_ADDRESS,
+        data,
+      })
+
+      console.log({ res })
+    }
+  }
+
   return (
     <div className="container">
       <input
@@ -40,8 +68,11 @@ export const App: React.FC = () => {
       >
         {connected ? 'Disconnect' : 'Connect'}
       </button>
+      <button onClick={getBalance} type="button">
+        Transfer DAI
+      </button>
       <button onClick={send} type="button" disabled={!connected}>
-        Send
+        Transfer ETH
       </button>
     </div>
   )
